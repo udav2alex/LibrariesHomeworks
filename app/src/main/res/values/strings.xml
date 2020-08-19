@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">LibrariesHomeworks</string>
     <string name="type_anything">Type anything</string>
+    <string name="start">Start</string>
+    <string name="not_available">n/a</string>
+    <string name="hw1_1_button_text">"Clicks: "</string>
 </resources>

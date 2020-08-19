@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ru.gressor.librarieshomeworks">
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -9,13 +12,27 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".homework2.MainActivityHW2_1">
+
+        <activity android:name=".homework1.mvvm_live.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".homework1.mvvm.MainActivity">
+        </activity>
+
+        <activity android:name=".homework1.mvp.MainActivity">
+        </activity>
+
+        <activity android:name=".homework2.MainActivityHW2_1">
+        </activity>
+
+        <activity android:name=".homework3.MainActivityHW3_1">
+        </activity>
+
     </application>
 
 </manifest>
