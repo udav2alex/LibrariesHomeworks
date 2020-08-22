@@ -19,6 +19,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableEmitter;
+import io.reactivex.rxjava3.core.CompletableOnSubscribe;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import ru.gressor.librarieshomeworks.R;
 
 public class MainActivityHW3_1 extends AppCompatActivity {
@@ -26,11 +32,17 @@ public class MainActivityHW3_1 extends AppCompatActivity {
     private static final int PNG_QUALITY = 100;
     private static final int PERMISSION_REQUEST_CODE = 1;
 
+    private Disposable disposable;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.hw3_activity_main);
 
+        init();
+    }
+
+    private void init() {
         findViewById(R.id.HW3_1_button).setOnClickListener((view) -> {
             Log.d(TAG, "OnClick");
 
@@ -42,24 +54,60 @@ public class MainActivityHW3_1 extends AppCompatActivity {
             } else {
                 Log.d(TAG, "Read/write permissions granted!");
 
-                try {
-                    File dir = Environment.getExternalStorageDirectory();
-                    File file = new File(dir + "/Download", "test.jpg");
-                    Log.d(TAG, file.getCanonicalPath());
-
-                    if (file.exists()) {
-                        Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
-                        File newFile = new File(file.getParent(), "test.png");
-
-                        FileOutputStream out = new FileOutputStream(newFile);
-                        bitmap.compress(Bitmap.CompressFormat.PNG, PNG_QUALITY, out);
-                        out.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                AlertDialog dialog = getCancelDialogBuilder();
+                disposable = fileConverter()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnSubscribe(disposable -> dialog.show())
+                        .doOnTerminate(dialog::hide)
+                        .subscribe(
+                                () -> Toast.makeText(this, "Well done!", Toast.LENGTH_LONG).show(),
+                                (throwable) -> Toast.makeText(this, "Error!", Toast.LENGTH_LONG).show());
             }
         });
+    }
+
+    private AlertDialog getCancelDialogBuilder() {
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(MainActivityHW3_1.this);
+        builder
+                .setCancelable(false)
+                .setTitle("Cancel converter?")
+                .setMessage("You can cancel converter")
+                .setPositiveButton("Cancel", (dialogInterface, i) -> {
+                    if (disposable != null && !disposable.isDisposed())
+                            disposable.dispose();
+                });
+
+        return builder.create();
+    }
+
+    private Completable fileConverter() {
+        return Completable.create(emitter -> {
+            try {
+                File dir = Environment.getExternalStorageDirectory();
+                File file = new File(dir + "/Download", "test.jpg");
+                Log.d(TAG, file.getCanonicalPath());
+
+                if (file.exists()) {
+                    Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+                    File newFile = new File(file.getParent(), "test.png");
+
+                    try (FileOutputStream out = new FileOutputStream(newFile)) {
+                        Thread.sleep(5000);
+                        bitmap.compress(Bitmap.CompressFormat.PNG, PNG_QUALITY, out);
+                    } catch (IOException e) {
+                        Log.d(TAG, "convertFile inner: " + e.toString());
+                        emitter.onError(new RuntimeException("convertFile inner: " + e.toString()));
+                    } catch (InterruptedException e) {
+                        Log.d(TAG, "convertFile inner: " + e.toString());
+                    }
+                }
+            } catch (IOException e) {
+                Log.d(TAG, "convertFile outer: " + e.toString());
+                emitter.onError(new RuntimeException("convertFile outer: " + e.toString()));
+            }
+            emitter.onComplete();
+        }).subscribeOn(Schedulers.computation());
     }
 
     @Override

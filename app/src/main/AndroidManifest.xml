@@ -26,14 +26,14 @@
         </activity>
 
         <activity android:name=".homework2.MainActivityHW2_1v2">
+        </activity>
+
+        <activity android:name=".homework3.MainActivityHW3_1">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <activity android:name=".homework3.MainActivityHW3_1">
         </activity>
 
     </application>
